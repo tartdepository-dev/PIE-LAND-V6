@@ -37,7 +37,7 @@ button {
 
 <!-- Single looping audio -->
 <audio id="loopAudio" loop preload="auto">
-  <source src="YOURFILE.mp3" type="audio/mpeg">
+  <source src="trollolol.swf.mp3" type="audio/mpeg">
 </audio>
 
 <script>
