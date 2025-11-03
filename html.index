@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ultimate Pie Land Chaos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+html, body {
+  margin:0; padding:0; width:100%; height:100%; overflow:hidden;
+  font-family:"Comic Sans MS", cursive, sans-serif; background:#ff00ff; color:#fff;
+  position:relative;
+}
+h1 {
+  font-size:7vw; text-shadow:3px 3px #000, -3px -3px #000;
+  position:absolute; top:10%; left:50%; transform:translateX(-50%);
+}
+button {
+  padding:20px 50px; font-size:4vw; border:none; border-radius:15px;
+  cursor:pointer; text-shadow:1px 1px #000; position:absolute; transition:all .1s;
+}
+#chaosBtn { bottom:15%; left:50%; transform:translateX(-50%); background:#ff0000; color:#fff; }
+#tabBtn { bottom:5%; left:50%; transform:translateX(-50%); background:#00ff00; color:#000; }
+.marquee {
+  font-size:3vw; color:#00ff00; text-shadow:1px 1px #000; position:absolute; width:100%;
+}
+.confetti { width:15px; height:15px; position:absolute; opacity:0.8; transform:rotate(0deg); }
+.shape { position:absolute; opacity:0.7; border-radius:0%; transform:rotate(0deg); }
+</style>
+</head>
+<body>
+
+<div class="marquee" id="marq1">WELCOME TO ULTIMATE PIE LAND CHAOS!</div>
+<div class="marquee" id="marq2" style="top:10%;">EVERYTHING IS ABSOLUTELY INSANE!</div>
+<h1 id="header">ULTIMATE PIE CHAOS</h1>
+<button id="chaosBtn">ACTIVATE PIE CHAOS</button>
+<button id="tabBtn">THE ULTIMATE PIE BUTTON</button>
+
+<!-- Single looping audio -->
+<audio id="loopAudio" loop preload="auto">
+  <source src="YOURFILE.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const chaosBtn = document.getElementById('chaosBtn');
+const tabBtn = document.getElementById('tabBtn');
+const header = document.getElementById('header');
+const marqs = [document.getElementById('marq1'), document.getElementById('marq2')];
+const audio = document.getElementById('loopAudio');
+
+let chaosActive = false;
+let audioStarted = false;
+let chaosInterval;
+let doomMode = false;
+
+// Random move & rotate & scale
+function randomTransform(el, rangeX=100, rangeY=50, rangeR=360, scaleRange=1.5){
+  const x=(Math.random()-0.5)*rangeX;
+  const y=(Math.random()-0.5)*rangeY;
+  const r=Math.random()*rangeR;
+  const s=1+Math.random()*scaleRange;
+  el.style.transform=`translate(${x}px,${y}px) rotate(${r}deg) scale(${s})`;
+}
+
+// Spawn confetti
+function spawnConfetti(){
+  const div=document.createElement('div');
+  div.className='confetti';
+  div.style.left=Math.random()*100+'%';
+  div.style.top='-20px';
+  div.style.background=`hsl(${Math.random()*360},100%,50%)`;
+  div.style.width=div.style.height=Math.random()*15+5+'px';
+  document.body.appendChild(div);
+  let y=0;
+  const fall=setInterval(()=>{
+    y+=Math.random()*15;
+    div.style.top=y+'px';
+    div.style.transform=`rotate(${Math.random()*360}deg) scale(${Math.random()+0.5})`;
+    if(y>window.innerHeight){ clearInterval(fall); div.remove(); }
+  },30);
+}
+
+// Spawn random shapes
+function spawnShape(){
+  const s=document.createElement('div');
+  s.className='shape';
+  s.style.left=Math.random()*100+'%';
+  s.style.top=Math.random()*100+'%';
+  s.style.width=s.style.height=Math.random()*50+20+'px';
+  s.style.background=`hsl(${Math.random()*360},100%,50%)`;
+  s.style.borderRadius=Math.random()>0.5?'50%':'0%';
+  document.body.appendChild(s);
+  setTimeout(()=>s.remove(),2000);
+}
+
+// Flash background & invert & shake
+function flashScreen(){
+  if(doomMode) return; // skip if doom mode
+  document.body.style.background=`hsl(${Math.random()*360},100%,50%)`;
+  document.body.style.filter=`invert(${Math.random()>0.5?1:0})`;
+  document.body.style.left=(Math.random()-0.5)*20+'px';
+  document.body.style.top=(Math.random()-0.5)*20+'px';
+}
+
+// Chaos loop
+function startChaos(){
+  chaosInterval=setInterval(()=>{
+    if(doomMode) return;
+    randomTransform(header,300,150,360,2);
+    randomTransform(chaosBtn,200,100,360,1.5);
+    marqs.forEach(m=>randomTransform(m,300,100,360,2));
+    spawnConfetti();
+    spawnShape();
+    flashScreen();
+  },50);
+}
+
+// Start audio after first click
+document.addEventListener('click', ()=>{
+  if(!audioStarted){
+    audio.volume=0.8;
+    audio.play().catch(e=>console.log("Audio blocked:", e));
+    audioStarted=true;
+  }
+},{once:true});
+
+// Toggle visual chaos
+chaosBtn.addEventListener('click', ()=>{
+  chaosActive=!chaosActive;
+  chaosBtn.textContent = chaosActive?"DEACTIVATE PIE CHAOS":"ACTIVATE PIE CHAOS";
+  if(chaosActive) startChaos();
+  else clearInterval(chaosInterval);
+});
+
+// Header jitter constantly
+setInterval(()=>randomTransform(header,50,50,30,0.5),50);
+
+// Mouse trail
+document.addEventListener('mousemove', e=>{
+  const dot=document.createElement('div');
+  dot.className='confetti';
+  dot.style.left=e.clientX+'px';
+  dot.style.top=e.clientY+'px';
+  dot.style.background=`hsl(${Math.random()*360},100%,50%)`;
+  dot.style.width = dot.style.height=Math.random()*15+5+'px';
+  document.body.appendChild(dot);
+  setTimeout(()=>dot.remove(),500);
+});
+
+// Ultimate Pie Button: doom/pause toggle
+tabBtn.addEventListener('click', ()=>{
+  doomMode = !doomMode;
+  if(doomMode){
+    // DARK/PAUSE MODE
+    document.body.style.background="#111";
+    document.body.style.filter="invert(0.2)";
+    audio.playbackRate=0.3;
+    clearInterval(chaosInterval);
+    tabBtn.textContent="REVIVE PIE CHAOS";
+  } else {
+    // RESTORE CHAOS
+    audio.playbackRate=1;
+    document.body.style.background="#ff00ff";
+    document.body.style.filter="invert(0)";
+    startChaos();
+    tabBtn.textContent="THE ULTIMATE PIE BUTTON";
+  }
+});
+</script>
+</body>
+</html>
